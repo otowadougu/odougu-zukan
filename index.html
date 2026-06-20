@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>音羽画廊 お道具図鑑</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root{
+    --bg:#faf8f3;
+    --card:#ffffff;
+    --border:#e5e0d5;
+    --text:#2c2a26;
+    --text-sub:#7a766c;
+    --accent:#7a5c3e;
+    --accent-bg:#f1e9dd;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+  }
+  body{
+    font-family:"Hiragino Sans","Yu Gothic",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-text-size-adjust:100%;
+  }
+  header{
+    position:sticky;
+    top:0;
+    background:var(--bg);
+    z-index:10;
+    padding:12px 14px 8px;
+    border-bottom:1px solid var(--border);
+  }
+  header h1{
+    font-size:17px;
+    font-weight:600;
+    margin:0 0 10px;
+  }
+  .searchbox{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:9px 12px;
+    margin-bottom:10px;
+  }
+  .searchbox input{
+    border:none;
+    outline:none;
+    flex:1;
+    font-size:15px;
+    background:transparent;
+    color:var(--text);
+  }
+  .pills{
+    display:flex;
+    gap:6px;
+    overflow-x:auto;
+    padding-bottom:4px;
+    -ms-overflow-style:none;
+    scrollbar-width:none;
+  }
+  .pills::-webkit-scrollbar{display:none;}
+  .pill{
+    flex-shrink:0;
+    font-size:13px;
+    padding:6px 13px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--text-sub);
+    white-space:nowrap;
+    cursor:pointer;
+  }
+  .pill.active{
+    border-color:var(--accent);
+    background:var(--accent-bg);
+    color:var(--accent);
+    font-weight:600;
+  }
+  main{
+    padding:12px;
+  }
+  .status{
+    text-align:center;
+    color:var(--text-sub);
+    font-size:13px;
+    padding:30px 0;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+  }
+  @media(min-width:600px){
+    .grid{grid-template-columns:repeat(3,1fr);}
+  }
+  @media(min-width:900px){
+    .grid{grid-template-columns:repeat(4,1fr);}
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+    cursor:pointer;
+  }
+  .card .thumb{
+    aspect-ratio:1;
+    background:#efece4;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .card .thumb img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .card .thumb .noimg{
+    color:#bdb8a8;
+    font-size:12px;
+  }
+  .card .body{
+    padding:8px 10px 10px;
+  }
+  .card .cat{
+    font-size:10px;
+    color:var(--text-sub);
+    margin:0 0 3px;
+  }
+  .card .desc{
+    font-size:13px;
+    font-weight:600;
+    line-height:1.4;
+    margin:0;
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .card .maker{
+    font-size:11.5px;
+    color:var(--text-sub);
+    margin:3px 0 0;
+  }
+
+  .overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.55);
+    z-index:100;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .overlay.show{display:flex;}
+  .sheet{
+    background:var(--card);
+    width:100%;
+    max-width:480px;
+    max-height:88vh;
+    overflow-y:auto;
+    border-radius:16px 16px 0 0;
+    padding:16px 18px 24px;
+  }
+  .sheet .closebar{
+    width:36px;
+    height:4px;
+    background:var(--border);
+    border-radius:2px;
+    margin:0 auto 14px;
+  }
+  .sheet img{
+    width:100%;
+    border-radius:10px;
+    margin-bottom:14px;
+    background:#efece4;
+  }
+  .sheet .cat{
+    font-size:12px;
+    color:var(--accent);
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  .sheet .desc{
+    font-size:17px;
+    font-weight:600;
+    line-height:1.5;
+    margin:0 0 10px;
+  }
+  .sheet dl{
+    margin:0;
+    font-size:14px;
+  }
+  .sheet dt{
+    color:var(--text-sub);
+    margin-top:8px;
+  }
+  .sheet dd{
+    margin:2px 0 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>音羽画廊　お道具図鑑</h1>
+  <div class="searchbox">
+    <span>🔍</span>
+    <input id="q" placeholder="道具名・作者で検索" />
+  </div>
+  <div class="pills" id="pills"></div>
+</header>
+
+<main>
+  <div id="status" class="status">読み込み中…</div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<script>
+/* ====================================================================
+   ここを、Googleスプレッドシートを「ウェブに公開」した際の
+   CSV形式のURLに書き換えてください。
+   （ファイル → 共有 → ウェブに公開 → 該当シートを選び、CSV形式を選択）
+   例: https://docs.google.com/spreadsheets/d/xxxxx/pub?gid=0&single=true&output=csv
+==================================================================== */
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoLnsJQh_LASPhgkAf-h54d6leSw6xFr8HbwEkp20OfALuTDEjN1Y_9WchaVatQrWRlJqCa5y4-mXu/pub?gid=892954692&single=true&output=csv";
+
+/* 列名（スプレッドシートのヘッダーと一致させる） */
+const COL = {
+  category: "道具種類",
+  season: "季節",
+  desc: "記述",
+  maker: "造",
+  note: "備考",
+  status: "公開状態",
+  imageUrl: "画像"
+};
+
+let allItems = [];
+let activeCat = "すべて";
+let query = "";
+
+function cleanCategory(raw){
+  if(!raw) return "その他";
+  return raw.replace(/^\d+_/, "").trim() || "その他";
+}
+
+/* URLの中にスペースなどが含まれていても確実に読み込めるようにエンコードする */
+function safeUrl(url){
+  if(!url) return "";
+  try{
+    return encodeURI(decodeURI(url));
+  }catch(e){
+    return encodeURI(url);
+  }
+}
+
+function render(){
+  const cats = ["すべて", ...new Set(allItems.map(i => i.cat))];
+  const pillsEl = document.getElementById("pills");
+  pillsEl.innerHTML = cats.map(c =>
+    `<div class="pill ${c===activeCat?'active':''}" data-cat="${c}">${c}</div>`
+  ).join("");
+  pillsEl.querySelectorAll(".pill").forEach(p => {
+    p.onclick = () => { activeCat = p.dataset.cat; render(); };
+  });
+
+  const q = query.trim();
+  const items = allItems.filter(i =>
+    (activeCat === "すべて" || i.cat === activeCat) &&
+    (q === "" || i.desc.includes(q) || i.maker.includes(q))
+  );
+
+  const gridEl = document.getElementById("grid");
+  const statusEl = document.getElementById("status");
+
+  if(items.length === 0){
+    gridEl.innerHTML = "";
+    statusEl.textContent = "該当するお道具がありません";
+    statusEl.style.display = "block";
+    return;
+  }
+  statusEl.style.display = "none";
+
+  gridEl.innerHTML = items.map((i, idx) => `
+    <div class="card" data-idx="${allItems.indexOf(i)}">
+      <div class="thumb">
+        ${i.imageUrl ? `<img loading="lazy" src="${safeUrl(i.imageUrl)}" onerror="this.parentElement.innerHTML='<span class=&quot;noimg&quot;>写真なし</span>'">` : `<span class="noimg">写真なし</span>`}
+      </div>
+      <div class="body">
+        <p class="cat">${i.cat}</p>
+        <p class="desc">${i.desc || "(無題)"}</p>
+        ${i.maker ? `<p class="maker">${i.maker}</p>` : ""}
+      </div>
+    </div>
+  `).join("");
+
+  gridEl.querySelectorAll(".card").forEach(card => {
+    card.onclick = () => openSheet(allItems[card.dataset.idx]);
+  });
+}
+
+function openSheet(item){
+  const sheetEl = document.getElementById("sheet");
+  sheetEl.innerHTML = `
+    <div class="closebar"></div>
+    ${item.imageUrl ? `<img src="${safeUrl(item.imageUrl)}" onerror="this.style.display='none'">` : ""}
+    <p class="cat">${item.cat}</p>
+    <p class="desc">${item.desc || "(無題)"}</p>
+    <dl>
+      ${item.maker ? `<dt>作者・銘</dt><dd>${item.maker}</dd>` : ""}
+      ${item.season ? `<dt>季節</dt><dd>${item.season}</dd>` : ""}
+      ${item.note ? `<dt>備考</dt><dd>${item.note}</dd>` : ""}
+    </dl>
+  `;
+  document.getElementById("overlay").classList.add("show");
+}
+
+document.getElementById("overlay").addEventListener("click", e => {
+  if(e.target.id === "overlay") e.target.classList.remove("show");
+});
+
+document.getElementById("q").addEventListener("input", e => {
+  query = e.target.value;
+  render();
+});
+
+function loadData(){
+  if(!CSV_URL || CSV_URL.indexOf("PASTE_YOUR") === 0){
+    document.getElementById("status").innerHTML =
+      "CSVのURLが設定されていません。<br>HTMLファイル内の CSV_URL を、公開したスプレッドシートのCSVリンクに書き換えてください。";
+    return;
+  }
+  Papa.parse(CSV_URL, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results){
+      allItems = results.data
+        .filter(r => (r[COL.status] || "公開") !== "非公開")
+        .map(r => ({
+          cat: cleanCategory(r[COL.category]),
+          season: (r[COL.season] || "").trim(),
+          desc: (r[COL.desc] || "").trim(),
+          maker: (r[COL.maker] || "").trim(),
+          note: (r[COL.note] || "").trim(),
+          imageUrl: (r[COL.imageUrl] || "").trim()
+        }));
+      render();
+    },
+    error: function(err){
+      document.getElementById("status").textContent =
+        "データの読み込みに失敗しました。CSV_URLの設定をご確認ください。";
+    }
+  });
+}
+
+loadData();
+</script>
+</body>
+</html>
