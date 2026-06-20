@@ -245,7 +245,9 @@ const COL = {
   maker: "造",
   note: "備考",
   status: "公開状態",
-  imageUrl: "画像"
+  imageUrl: "画像",
+  alphabet: "アルファベット",
+  seq: "連番"
 };
 
 let allItems = [];
@@ -300,7 +302,7 @@ function render(){
         ${i.imageUrl ? `<img loading="lazy" src="${safeUrl(i.imageUrl)}" onerror="this.parentElement.innerHTML='<span class=&quot;noimg&quot;>写真なし</span>'">` : `<span class="noimg">写真なし</span>`}
       </div>
       <div class="body">
-        <p class="cat">${i.cat}</p>
+        <p class="cat">${i.cat}${i.code ? `　<span style="color:var(--accent);font-weight:600;">${i.code}</span>` : ""}</p>
         <p class="desc">${i.desc || "(無題)"}</p>
         ${i.maker ? `<p class="maker">${i.maker}</p>` : ""}
       </div>
@@ -317,7 +319,7 @@ function openSheet(item){
   sheetEl.innerHTML = `
     <div class="closebar"></div>
     ${item.imageUrl ? `<img src="${safeUrl(item.imageUrl)}" onerror="this.style.display='none'">` : ""}
-    <p class="cat">${item.cat}</p>
+    <p class="cat">${item.cat}${item.code ? `　<span style="color:var(--accent);font-weight:600;">${item.code}</span>` : ""}</p>
     <p class="desc">${item.desc || "(無題)"}</p>
     <dl>
       ${item.maker ? `<dt>作者・銘</dt><dd>${item.maker}</dd>` : ""}
@@ -350,14 +352,21 @@ function loadData(){
     complete: function(results){
       allItems = results.data
         .filter(r => (r[COL.status] || "公開") !== "非公開")
-        .map(r => ({
-          cat: cleanCategory(r[COL.category]),
-          season: (r[COL.season] || "").trim(),
-          desc: (r[COL.desc] || "").trim(),
-          maker: (r[COL.maker] || "").trim(),
-          note: (r[COL.note] || "").trim(),
-          imageUrl: (r[COL.imageUrl] || "").trim()
-        }));
+        .map(r => {
+          const seqRaw = (r[COL.seq] || "").toString().trim();
+          const seqNum = seqRaw ? Math.round(parseFloat(seqRaw)) : null;
+          const alpha = (r[COL.alphabet] || "").trim();
+          const code = alpha && seqNum ? `${alpha}${seqNum}` : (alpha || (seqNum ?? ""));
+          return {
+            cat: cleanCategory(r[COL.category]),
+            season: (r[COL.season] || "").trim(),
+            desc: (r[COL.desc] || "").trim(),
+            maker: (r[COL.maker] || "").trim(),
+            note: (r[COL.note] || "").trim(),
+            imageUrl: (r[COL.imageUrl] || "").trim(),
+            code: code
+          };
+        });
       render();
     },
     error: function(err){
