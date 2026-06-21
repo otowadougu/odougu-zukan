@@ -82,6 +82,13 @@
     color:var(--accent);
     font-weight:600;
   }
+  .pill-count{
+    display:inline-block;
+    margin-left:5px;
+    font-size:10px;
+    color:inherit;
+    opacity:0.65;
+  }
   main{
     padding:12px;
   }
@@ -271,9 +278,10 @@ function safeUrl(url){
 
 function render(){
   const cats = ["すべて", ...new Set(allItems.map(i => i.cat))];
+  const countOf = c => c === "すべて" ? allItems.length : allItems.filter(i => i.cat === c).length;
   const pillsEl = document.getElementById("pills");
   pillsEl.innerHTML = cats.map(c =>
-    `<div class="pill ${c===activeCat?'active':''}" data-cat="${c}">${c}</div>`
+    `<div class="pill ${c===activeCat?'active':''}" data-cat="${c}">${c}<span class="pill-count">${countOf(c)}</span></div>`
   ).join("");
   pillsEl.querySelectorAll(".pill").forEach(p => {
     p.onclick = () => { activeCat = p.dataset.cat; render(); };
