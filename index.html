@@ -236,6 +236,7 @@
   <div class="searchbox">
     <span>🔍</span>
     <input id="q" placeholder="道具名・作者で検索" />
+    <span id="qClear" style="display:none;cursor:pointer;color:var(--text-sub);font-size:18px;line-height:1;padding:0 2px;">&times;</span>
   </div>
   <div class="pills" id="pills"></div>
 </header>
@@ -356,9 +357,21 @@ document.getElementById("overlay").addEventListener("click", e => {
   if(e.target.id === "overlay") e.target.classList.remove("show");
 });
 
-document.getElementById("q").addEventListener("input", e => {
+const qEl = document.getElementById("q");
+const qClearEl = document.getElementById("qClear");
+
+qEl.addEventListener("input", e => {
   query = e.target.value;
+  qClearEl.style.display = query ? "inline-block" : "none";
   render();
+});
+
+qClearEl.addEventListener("click", () => {
+  qEl.value = "";
+  query = "";
+  qClearEl.style.display = "none";
+  render();
+  qEl.focus();
 });
 
 function loadData(){
