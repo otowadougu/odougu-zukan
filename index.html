@@ -235,7 +235,7 @@
   </div>
   <div class="searchbox">
     <span>🔍</span>
-    <input id="q" placeholder="銘・作者・焼で検索" />
+    <input id="q" placeholder="銘・作・焼で検索" />
     <span id="qClear" style="display:none;cursor:pointer;color:var(--text-sub);font-size:18px;line-height:1;padding:0 2px;">&times;</span>
   </div>
   <div class="pills" id="pills"></div>
@@ -345,7 +345,7 @@ function openSheet(item){
     <p class="cat">${item.cat}${item.code ? `　<span style="color:var(--accent);font-weight:600;">${item.code}</span>` : ""}</p>
     <p class="desc">${item.desc || "(無題)"}</p>
     <dl>
-      ${item.maker ? `<dt>作者・銘</dt><dd>${item.maker}</dd>` : ""}
+      ${item.maker ? `<dt>作</dt><dd>${item.maker}</dd>` : ""}
       ${item.season ? `<dt>季節</dt><dd>${item.season}</dd>` : ""}
       ${item.note ? `<dt>備考</dt><dd>${item.note}</dd>` : ""}
     </dl>
