@@ -1,0 +1,16 @@
+{
+  "name": "音羽画廊 お道具図鑑 閲覧用",
+  "short_name": "お道具図鑑",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#faf8f3",
+  "theme_color": "#7a5c3e",
+  "icons": [
+    {
+      "src": "icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
