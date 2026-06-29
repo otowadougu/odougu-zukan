@@ -1,5 +1,5 @@
 {
-  "name": "音羽画廊 お道具図鑑 閲覧用",
+  "name": "お道具図鑑 閲覧用",
   "short_name": "お道具図鑑",
   "start_url": "./index.html",
   "display": "standalone",
